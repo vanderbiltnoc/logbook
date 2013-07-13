@@ -27,9 +27,12 @@
 			if($rrow->Status == "Available"){
 				$class="available";
 			}else{
+				global $facDB;
+				$resLog=new ResourceLog();
 				$resLog->ResourceID=$rrow->ResourceID;
 				$resLog->GetCurrentStatus($facDB);
 
+				$tmpUser=new VUser();
 				$tmpUser->UserID=$resLog->VUNetID;
 				$userName=$tmpUser->GetName($facDB);
 
@@ -84,6 +87,7 @@
 				setInterval(function(){ updateList(); },60000);
 			});
 			function updateList(){
+				var selected=0;
 				$('#resourceid option').each(function(){
 					if($(this)[0].selected){ selected=$(this).val(); }
 				});
