@@ -15,7 +15,7 @@
 	$statusmessage="";
 
         $header="<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n<html>\n<head>\n<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n<title>Vanderbilt ITS Resource Concierge</title>\n<link rel=\"stylesheet\" href=\"css/inventory.php\" type=\"text/css\">\n<link rel=\"stylesheet\" href=\"elogs.css\" type=\"text/css\">\n
-<link rel=\"stylesheet\" href=\"css/validationEngine.jquery.css\" type=\"text/css\" media=\"screen\" charset=\"utf-8\">\n<script src=\"js/jquery-min.js\" type=\"text/javascript\"></script>\n<script src=\"js/jquery.validationEngine-en.js\" type=\"text/javascript\"></script>\n<script src=\"js/jquery.validationEngine.js\" type=\"text/javascript\"></script>
+<link rel=\"stylesheet\" href=\"css/validationEngine.jquery.css\" type=\"text/css\" media=\"screen\" charset=\"utf-8\">\n<script src=\"js/jquery.min.js\" type=\"text/javascript\"></script>\n<script src=\"js/jquery.validationEngine-en.js\" type=\"text/javascript\"></script>\n<script src=\"js/jquery.validationEngine.js\" type=\"text/javascript\"></script>
 
 <script type=\"text/javascript\">
 	$(document).ready(function(){

@@ -170,7 +170,7 @@
   <link rel="stylesheet" href="elogs.css" type="text/css">
   <script type="text/javascript" src="Calendar/calendar_us.js"></script>
   <link rel="stylesheet" href="Calendar/calendar.css" type="text/css">
-  <script src="js/jquery-min.js" type="text/javascript"></script>
+  <script src="js/jquery.min.js" type="text/javascript"></script>
 </head>
 <body>
 <div id="header"></div>

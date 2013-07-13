@@ -20,7 +20,7 @@
   <title>Vanderbilt ITS Facilities Resource Concierge</title>
   <link rel="stylesheet" href="css/inventory.php" type="text/css">
   <link rel="stylesheet" href="elogs.css" type="text/css">
-  <script src="js/jquery-min.js" type="text/javascript"></script>
+  <script src="js/jquery.min.js" type="text/javascript"></script>
 </head>
 <body>
 <div id="header"></div>

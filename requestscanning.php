@@ -114,8 +114,8 @@
   <link rel="stylesheet" href="elogs.css" type="text/css">
   <link rel="stylesheet" href="css/jquery-ui.css" type="text/css">
   <link rel="stylesheet" href="css/validationEngine.jquery.css" type="text/css">
-  <script type="text/javascript" src="js/jquery-min.js"></script>
-  <script type="text/javascript" src="js/jquery-ui-min.js"></script>
+  <script type="text/javascript" src="js/jquery.min.js"></script>
+  <script type="text/javascript" src="js/jquery-ui.min.js"></script>
   <script type="text/javascript" src="js/jquery.validationEngine-en.js"></script>
   <script type="text/javascript" src="js/jquery.validationEngine.js"></script>
 

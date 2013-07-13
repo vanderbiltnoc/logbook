@@ -28,11 +28,11 @@
 
 		<link rel=\"stylesheet\" href=\"css/jquery-ui.css\" type=\"text/css\">
 
-		<script src=\"js/jquery-min.js\" type=\"text/javascript\"></script>\n
-		<script src=\"js/jquery-ui-min.js\" type=\"text/javascript\"></script>\n
+		<script src=\"js/jquery.min.js\" type=\"text/javascript\"></script>\n
+		<script src=\"js/jquery-ui.min.js\" type=\"text/javascript\"></script>\n
 		<script src=\"js/jquery.validationEngine-en.js\" type=\"text/javascript\"></script>\n
 		<script src=\"js/jquery.validationEngine.js\" type=\"text/javascript\"></script>\n
-		<script src=\"js/jquery-ui-timepicker-addon.js\" type=\"text/javascript\"></script>\n
+		<script src=\"js/jquery.timepicker.js\" type=\"text/javascript\"></script>\n
 		<script type=\"text/javascript\">
 			$(document).ready(function(){
 				$('#resourceid option.reserved').each(function(){
