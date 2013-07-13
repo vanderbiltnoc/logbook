@@ -50,17 +50,13 @@
 		return $body;
 	}
 
+	// Expire reservations that are older than 15 minutes
+	$res->ExpireReservations($facDB);
 
 	// AJAX returns
 	if(isset($_GET['updatelist'])){
 		echo buildresourcelist($res->GetActiveResources($facDB));
 		exit;
-	}
-	if(isset($_GET['rid'])){
-		$res->ResourceID=$_GET["rid"];
-		$res->GetResource($facDB);
-		echo $res->Status;
-		exit; // make sure we don't call any of the rest of the page
 	}
 	// END AJAX
 
@@ -116,8 +112,6 @@
 	$resLog = new ResourceLog();
 	$tmpUser = new VUser();
 
-	// Expire reservations that are older than 15 minutes
-	$res->ExpireReservations($facDB);
 	
 	$action = @$_REQUEST["action"];
 	
