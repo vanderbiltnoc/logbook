@@ -4,7 +4,7 @@
 
  	$user = new VUser();
 	$user->UserID = $_SERVER["REMOTE_USER"];
-	$user->GetUserRights( $facDB );
+	$user->GetUserRights();
 
 	if ( ! $user->RackAdmin ) {
 		printf( "<meta http-equiv='refresh' content='0; url=concierge.php'>" );
@@ -31,7 +31,8 @@
 
       class PDF extends FPDF {
       	function Header() {
-      		$this->Image('../css/masthead3.png',10,8,100);
+			global $config;
+			$this->Image( 'images/' . $config->ParameterArray['PDFLogoFile'],10,8,100);
       		$this->SetFont('Arial','B',12);
       		$this->Cell(120);
       		$this->Cell(30,20,'Information Technology Services',0,0,'C');
@@ -39,20 +40,21 @@
       		$this->SetFont( 'Arial','',10 );
       		$this->Cell( 50, 6, "Data Center Entry Report", 0, 1, "L" );
       		$this->Cell( 50, 6, "Report Date: " . date( "m/d/y" ), 0, 1, "L" );
-       		$this->Ln(10);
+			$this->Ln(10);
       	}
       
       	function Footer() {
-      	    	$this->SetY(-15);
-          		$this->SetFont('Arial','I',8);
-          		$this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');
+			global $config;
+			$this->SetY(-15);
+			$this->SetFont($config->ParameterArray["PDFfont"],'I',8);
+			$this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'C');
       	}
       }
       
       $pdf=new PDF();
       $pdf->AliasNbPages();
       $pdf->AddPage();
-      $pdf->SetFont('Arial','',10);
+      $pdf->SetFont($config->ParameterArray["PDFfont"],'',10);
       
       $pdf->SetFillColor( 0, 0, 0 );
       $pdf->SetTextColor( 255 );
@@ -70,7 +72,7 @@
       
       $pdf->Ln();
       
-      $pdf->SetFont('Arial','',6 );
+      $pdf->SetFont($config->ParameterArray["PDFfont"],'',6 );
       
       $pdf->SetfillColor( 224, 235, 255 );
       $pdf->SetTextColor( 0 );
@@ -118,7 +120,7 @@
      	$sql = "select count(a.EntryID) as Entries, a.VUNetID, b.LastName, b.FirstName from fac_DataCenterLog a, fac_Contact b where a.VUNetID=b.UserID and a.DataCenterID=\"" . $datacenterid . "\" group by a.VUNetID order by Entries DESC";
       $result = mysql_query( $sql, $facDB );
         
-      $pdf->SetFont('Arial','',10 );
+      $pdf->SetFont($config->ParameterArray["PDFfont"],'',10 );
       $headerTags = array( "Entries", "Contact Name", "VUNetID" );
       $cellWidths = array( 25, 40, 35 );
 
@@ -134,7 +136,7 @@
       
       $pdf->SetfillColor( 224, 235, 255 );
       $pdf->SetTextColor( 0 );
-      $pdf->SetFont('Arial','',8 );
+      $pdf->SetFont($config->ParameterArray["PDFfont"],'',8 );
       
       $pdf->SetfillColor( 224, 235, 255 );
       $pdf->SetTextColor( 0 );
@@ -168,17 +170,29 @@
   <title>Vanderbilt ITS Facilities Resource Concierge</title>
   <link rel="stylesheet" href="css/inventory.php" type="text/css">
   <link rel="stylesheet" href="elogs.css" type="text/css">
-  <script type="text/javascript" src="Calendar/calendar_us.js"></script>
-  <link rel="stylesheet" href="Calendar/calendar.css" type="text/css">
-  <script src="js/jquery.min.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="css/jquery-ui.css" type="text/css">
+  <link rel="stylesheet" href="css/validationEngine.jquery.css" type="text/css">
+  <script type="text/javascript" src="js/jquery.min.js"></script>
+  <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="js/jquery.validationEngine-en.js"></script>
+  <script type="text/javascript" src="js/jquery.validationEngine.js"></script>
+
+  <script type="text/javascript">
+	$(document).ready(function() {
+		$('input[name*="date"]').datepicker();
+		$('input[name="startdate"]').change(function(){
+			$('input[name="enddate"]').val($(this).val()).datepicker("destroy").datepicker({ minDate: $.datepicker.parseDate('mm/dd/yy',$(this).val()) });
+		});
+	});
+  </script>
 </head>
 <body>
 <div id="header"></div>
 <?php
 	include( "logmenu.inc.php" );
 	
-	$dc = new DataCenter();
-	$dcList = $dc->GetDCList( $facDB );
+	$dc=new DataCenter();
+	$dcList=$dc->GetDCList($facDB);
 ?>
 <div class="main">
 <h2>Enter criteria for the report:</h2>
@@ -188,32 +202,21 @@
        <th style="text-align: right;">Data Center:</th>
        <td><select name="datacenterid">
 <?php
-	foreach( $dcList as $dcRow ) {
-	  if ( $dcRow->EntryLogging )
-			printf( "<option value=%d>%s</option>\n", $dcRow->DataCenterID, $dcRow->Name );
+	foreach($dcList as $dcRow){
+		if($dcRow->EntryLogging){
+			print "\t\t\t<option value=$dcRow->DataCenterID>$dcRow->Name</option>\n";
+		}
 	}
 ?>
 	</select></td>
    </tr>
    <tr>
        <th style="text-align: right;">Start Date:</th>
-       <td><input type="text" id="startdate" name="startdate" value="" size=12 maxlength=12>
-                  <script type="text/javascript">
-                          new tcal ({
-                              'formname': 'logreport',
-                              'controlname': 'startdate'
-                          });
-                  </script></td>
+       <td><input type="text" id="startdate" name="startdate" value="" size=12 maxlength=12></td>
    </tr>
    <tr>
        <th style="text-align: right;">End Date:</th>
-       <td><input type="text" id="enddate" name="enddate" value="" size=12 maxlength=12>
-                  <script type="text/javascript">
-                          new tcal ({
-                              'formname': 'logreport',
-                              'controlname': 'enddate'
-                          });
-                  </script></td>
+       <td><input type="text" id="enddate" name="enddate" value="" size=12 maxlength=12></td>
    </tr>
    <tr>
        <td colspan=2 align=center><input type="submit" name="report" value="Submit"></td>
