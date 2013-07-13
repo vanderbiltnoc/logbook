@@ -11,11 +11,48 @@
 	$reqpurpose="";
 	$reqtime="";
 	$reqid="";
-	$reqresid="";
 	$statusmessage="";
 	$res = new Resource();
 
+	function buildresourcelist($resList){
+		$reqresid=(isset($_GET["resourceid"]))?$_GET["resourceid"]:'';
+
+		$body='<select name="resourceid" id="resourceid" class="validate[required]" size="6">';
+		foreach($resList as $rrow){
+			$reserved="";
+
+			// used in filling out the form details if something failed on the first go around
+			$selected=($rrow->ResourceID==$reqresid)?' selected="selected"':'';
+
+			if($rrow->Status == "Available"){
+				$class="available";
+			}else{
+				$resLog->ResourceID=$rrow->ResourceID;
+				$resLog->GetCurrentStatus($facDB);
+
+				$tmpUser->UserID=$resLog->VUNetID;
+				$userName=$tmpUser->GetName($facDB);
+
+				$rrow->Description.=" [$userName return ".date("M j H:i", strtotime($resLog->EstimatedReturn))."]";
+				if($rrow->Status == "Out"){
+					$class="checkedout";
+				}else{
+					$class="reserved";
+				}
+			}
+			$body.="<option data-cat=$rrow->CategoryID value=\"$rrow->ResourceID\" class=\"$class\"$selected>$rrow->Description</option>\n";
+		}
+		$body.='</select>';
+
+		return $body;
+	}
+
+
 	// AJAX returns
+	if(isset($_GET['updatelist'])){
+		echo buildresourcelist($res->GetActiveResources($facDB));
+		exit;
+	}
 	if(isset($_GET['rid'])){
 		$res->ResourceID=$_GET["rid"];
 		$res->GetResource($facDB);
@@ -35,32 +72,6 @@
 		<script src=\"js/jquery.timepicker.js\" type=\"text/javascript\"></script>\n
 		<script type=\"text/javascript\">
 			$(document).ready(function(){
-				$('#resourceid option.reserved').each(function(){
-					updateTimer($(this).val());
-				});
-			});
-			function updateTimer(resourceid){
-				setTimeout(function(){
-					updateStatus(resourceid);
-				},60000);
-			}
-			function updateStatus(resourceid){
-				$.get('',{rid: resourceid})
-				.done(function(data){
-					if(data.trim()=='Reserved'){
-						updateTimer(resourceid);
-					}else if(data.trim()=='Out'){
-						$('#resourceid option[value='+resourceid+']').removeClass('reserved').addClass('checkedout');
-					}else{
-						var opt=$('#resourceid option[value='+resourceid+']');
-						opt.text(opt.text().substring(0,opt.text().lastIndexOf('[')));
-						opt.removeClass('reserved').addClass('available');
-					}
-				});
-			}
-		</script>
-		<script type=\"text/javascript\">\n
-		 $(function(){
 		         $('#resourcecheckout').validationEngine({});
 		         $('#returntime').datetimepicker({
 	                 ampm: true,
@@ -70,8 +81,25 @@
     	             minDate: 0,
 	                 maxDate: 30
 		         });
-	    });
-        </script>\n</head>\n<body>\n<div id=\"header\"></div><div class=\"page\">\n";
+				setInterval(function(){ updateList(); },60000);
+			});
+			function updateList(){
+				$('#resourceid option').each(function(){
+					if($(this)[0].selected){ selected=$(this).val(); }
+				});
+				$.get('',{updatelist:''}).done(function(data){
+					var cat=$('select[name=categoryid]').val();
+					if(cat!=0){
+						$(data).find('option').each(function(){
+							if($(this).data('cat')!=cat){ $(this).addClass('hide'); }
+						});
+					}
+					var scrollpos=$('#resourceid').scrollTop();
+					$('#resourceid').replaceWith(data).scrollTop(scrollpos);
+					if(selected){ $('#resourceid').val(selected); }
+				});
+			}
+		</script>\n</head>\n<body>\n<div id=\"header\"></div><div class=\"page\">\n";
 
         //Show me the goods
         echo $header;
@@ -107,7 +135,6 @@
 				$reqpurpose=$_REQUEST["purpose"];
 				$reqtime=$_REQUEST["estimatedreturn"];
 				$reqid=$_REQUEST["vunetid"];
-				$reqresid=$_REQUEST["resourceid"];
 				$statusmessage="I cannot find that username / password combination.  Try again.";
 			}
 		}elseif(($res->Status == "Out") || ($res->Status == "Reserved")){
@@ -150,7 +177,7 @@
 		}
 		$body.="<option value=$catRow->CategoryID $selected>$catRow->Description</option>\n";
 	}
-	$body.="</select></td>\n</tr>\n<tr>\n<th>Resources</th>\n<td><select name=\"resourceid\" id=\"resourceid\" class=\"validate[required]\" size=\"6\">\n";
+	$body.="</select></td>\n</tr>\n<tr>\n<th>Resources</th>\n<td>";
 	
 	$res->CategoryID = $cat->CategoryID;
 	
@@ -159,31 +186,10 @@
 	}else{
 		$resList = $res->GetActiveResources($facDB);
 	}
-	foreach($resList as $resourceRow){
-		$reserved="";
 
-		// used in filling out the form details if something failed on the first go around
-		if($resourceRow->ResourceID==$reqresid){$selected="selected=\"selected\"";}else{$selected="";}
+	$body.=buildresourcelist($resList);
 
-		if($resourceRow->Status == "Available"){
-			$class="available";
-		}else{
-			$resLog->ResourceID = $resourceRow->ResourceID;
-			$resLog->GetCurrentStatus( $facDB );
-
-			$tmpUser->UserID = $resLog->VUNetID;
-			$userName = $tmpUser->GetName($facDB);
-
-			$reserved=" [$userName return ".date("M j H:i", strtotime($resLog->EstimatedReturn))."]";
-			if($resourceRow->Status == "Out"){
-				$class="checkedout";
-			}else{
-				$class="reserved";
-			}
-		}
-		$body.="<option value=\"$resourceRow->ResourceID\" class=\"$class\" $selected>$resourceRow->Description $reserved</option>\n";
-	}
-	$body.="</select></td>\n</tr>\n<tr>\n<th>Purpose</th>\n<td><input class=\"validate[required,length[4,60]] wide\" id=\"purpose\" type=\"text\" name=\"purpose\" size=\"60\" value=\"$reqpurpose\"></td>\n</tr>\n<tr>\n<th>Estimated Return</th>\n<td><input class=\"validate[required] wide\" id=\"returntime\" type=\"text\" name=\"estimatedreturn\" size=\"20\" value=\"$reqtime\"></td>\n</tr>\n<tr>\n<th>VUNetID</th>\n<td><input type=\"text\" class=\"validate[required]\" id=\"vunetid\" name=\"vunetid\" value=\"$reqid\"></td>\n</tr>\n<tr>\n<th>Password</th>\n<td><input type=\"password\" class=\"validate[required]\" id=\"password\" name=\"password\"></td>\n</tr>\n<tr>\n<td colspan=\"2\"><input type=\"submit\" name=\"action\" value=\"Request\"></td>\n</tr>\n</table>\n<span class=\"notice\">Resource reservations are valid for 15 minutes.  Please pick up your requested resource promptly.</span>\n</form>\n</div>\n</div>\n</body>\n</html>\n";
+	$body.="</td>\n</tr>\n<tr>\n<th>Purpose</th>\n<td><input class=\"validate[required,length[4,60]] wide\" id=\"purpose\" type=\"text\" name=\"purpose\" size=\"60\" value=\"$reqpurpose\"></td>\n</tr>\n<tr>\n<th>Estimated Return</th>\n<td><input class=\"validate[required] wide\" id=\"returntime\" type=\"text\" name=\"estimatedreturn\" size=\"20\" value=\"$reqtime\"></td>\n</tr>\n<tr>\n<th>VUNetID</th>\n<td><input type=\"text\" class=\"validate[required]\" id=\"vunetid\" name=\"vunetid\" value=\"$reqid\"></td>\n</tr>\n<tr>\n<th>Password</th>\n<td><input type=\"password\" class=\"validate[required]\" id=\"password\" name=\"password\"></td>\n</tr>\n<tr>\n<td colspan=\"2\"><input type=\"submit\" name=\"action\" value=\"Request\"></td>\n</tr>\n</table>\n<span class=\"notice\">Resource reservations are valid for 15 minutes.  Please pick up your requested resource promptly.</span>\n</form>\n</div>\n</div>\n</body>\n</html>\n";
 
 	echo $body;
 ?>
