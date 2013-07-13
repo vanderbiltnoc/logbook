@@ -1,0 +1,263 @@
+/* Global - Start */
+body {
+	background: white;
+	font: 11px Arial;
+	padding: 0px;
+	margin: 0px;
+}
+
+caption {
+	padding: 5px 0 0;
+	font: italic bold 18px Arial;
+	text-align: left;
+}
+ 
+th {
+	font: bold 11px Arial;
+	color: #FFCC66;
+	border: 1px solid #FFCC66;
+	border-left: 0px;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	text-align: left;
+	padding: 6px 6px 6px 12px;
+	background: #333333 no-repeat;
+	width: 150px;
+}
+
+td {
+	border-right: 1px solid #FFCC66;
+	border-bottom: 1px solid #FFCC66;
+	padding: 6px 6px 6px 12px;
+	color: #FFCC66;
+}
+div.main {
+	width: 800px;
+}
+div.main > form {
+	width: 600px;
+	margin-left: auto;
+	margin-right: auto;
+}
+div.page {
+}
+div.menu {
+	position: relative; 
+	float: left; 
+	display: inline-block; 
+	width: 200px; 
+}
+div.content {
+	display: inline-block; 
+	width: 600px; 
+	background-color: rgb(204, 204, 153); 
+	border: 1px dotted rgb(51, 51, 51); 
+	padding: 5px; 
+	margin: 0px auto;
+}
+table {
+	width: 100%;
+	border-collapse: collapse; 
+	background-color: #444444;
+}
+table input, table select {
+	background-color: darkgray;
+}
+.content div {
+	display: block;
+}
+/* Global - END */
+
+/* Data center entry admin - Start */
+#resourceadmin th{
+	width: 155px;
+}
+.dangerwillrobinson td {
+	background: red;
+        color: white;
+}
+.dangerwillrobinson td, .noclass td, div.content div table tr td {
+/*	padding: 0;
+	vertical-align: top; */
+}
+.dangerwillrobinson td:first-child, .noclass td:first-child, div.content div table tr td:first-child {
+	width: 155px;
+        padding: 0 0 0 5px;
+	vertical-align: middle;
+}
+.dangerwillrobinson td table tr th, .noclass td table tr th, div.content div table tr th {
+	width: 101px;
+	padding: 4px 5px;
+}
+.dangerwillrobinson td table tr td, .noclass td table tr td, div.content div table tr td {
+        padding: 4px 5px;
+}
+.content form select {
+	width: 100%;
+}
+.userimage {
+	width: 150px;
+	border: 0px;
+	padding: 0 auto;
+}
+/* Data center entry admin - END */
+
+/* Data center entry request - Start */
+.unauthorized, .error {
+	color: red;
+}
+/* Data center entry request - END */
+
+/* Request Resources - Start */
+.available {
+	background-color: #CCFF99;
+}
+.reserved {
+	background-color: #FFFFCC;
+}
+.checkedout {
+	background-color: #F5A9A9;
+}
+#resourcecheckout {
+}
+#resourceid {
+	overflow: hidden;
+	width: 411px;
+}
+.notice {
+	font-weight: bold;
+}
+.april {
+	background-image: url(april.gif);
+	background-position: center center;
+	background-repeat: no-repeat;
+	padding: 0 100px;
+	height: 260px;
+	width: 405px;
+}
+.april span {
+	background: black;
+	padding: 1px 5px;
+}
+/* Request Resources - END */
+
+/* Add Resources - Start */
+.wide {
+	width: 100%;
+}
+/* Resources - END */
+
+/* Scanning Requests */
+.scanning tr:first-child th:first-child {
+	border-right: 0px;
+	border-bottom: 0px;
+}
+.ir td, .ir th {
+	border-bottom: 0px;
+	border-right: 0px;
+	border-left: 0px;
+}
+.ir td:last-child {
+	border-right: 1px solid #c1dad7;
+}
+.ir th:first-child {
+	border-top: 0px;
+}
+tr.ir + tr > th:first-child {
+	border-top: 0px;
+}
+.ir input {
+	width: 100%;
+}
+.add {
+	width: 20px;
+	padding: 0px;
+}
+.scanning tr:first-child ~ tr .add {border-left: 1px solid; }
+/* Scanning Requests - END */
+
+/* Scanning Admin */
+.noauth {
+	background-color: #650000;
+}
+.auth {
+	background-color: #004F00;
+}
+.scanningadmin table th, .scanningadmin table td {
+	width: auto;
+}
+.scanme tr ~ tr td {
+	cursor: pointer;
+}
+.scanme .fileform ~ tr {
+	cursor: default;
+}
+.scanme .add {
+	position: absolute;
+	left: -2em;
+}
+.scanme form > div, .scanned form > div{
+	width: 30%;
+	display: inline-block;
+	padding: 0 1em;
+	vertical-align: top;
+	position: relative;
+}
+.scanme form > div > div {
+	position: relative;
+}
+.scanme form > div > div:last-child {
+	margin-bottom: 1em;
+}
+.scanned form > div {
+	width: auto;
+	vertical-align: bottom;
+}
+.scanme label, .scanned label {
+	margin-top: 1em;
+	display: block;
+}
+.scanned textarea {
+	width: 250px;
+	height: 6em;
+}
+div.MultiFile-label:last-child {
+	margin-bottom: 1em;
+}
+.scanme form > div button, .scanned form > div button {
+	margin-left: 1em; 
+	margin-bottom: 10px;
+}
+.scanme form > div:first-child ~ div input {
+	width: 40px;
+}
+.scanme form > div:first-child + div input {
+	width: 100%;
+}
+tr.fileform + tr > td { 
+	padding: 0px; 
+}
+table.scanme, table.scanned {
+	margin-bottom: 2.5em;
+}
+/* Scanning Admin - END */
+
+/* Scanning Reporting */
+.main.report form {
+	width: 750px;
+}
+.main.report form td,.main.report form th,.main.report form table {
+	width: auto;
+}
+.main tr, .main td{
+		vertical-align: middle;
+	}
+
+/* Scanning Reporting - END */
+
+/* Menu - Start */
+.menu input {
+	height: 25px;
+	width: 200px;
+}
+/* Menu - END */
