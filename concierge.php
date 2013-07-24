@@ -128,7 +128,7 @@
 				$resLog->VUNetID = $user->UserID;
 				$resLog->Note = $_REQUEST["purpose"];
 				$resLog->EstimatedReturn = date( "Y-m-d H:i:s", strtotime( $_REQUEST["estimatedreturn"] ) );
-				$resLog->RequestResource( $facDB );
+				$resLog->RequestResource();
 			}else{  // If password fails refill the form
 				$reqpurpose=$_REQUEST["purpose"];
 				$reqtime=$_REQUEST["estimatedreturn"];
