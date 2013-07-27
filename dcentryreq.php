@@ -46,7 +46,7 @@
 	if ( $action == "Request" ) {
 		// Validate the user
 		$user->UserID = $_REQUEST["vunetid"];
-		if($user->ValidateCredentials($facDB, $_REQUEST["password"])){
+		if($user->ValidateCredentials($_REQUEST["password"])){
 			$CN = $user->GetName($facDB);
 			// Now see if they are authorized for entry
 			$contact->UserID = $user->UserID;

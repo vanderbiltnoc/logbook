@@ -123,7 +123,7 @@
 		if($res->Status == "Available"){
 			// Validate the user
 			$user->UserID = $_REQUEST["vunetid"];
-			if ( $user->ValidateCredentials( $facDB, $_REQUEST["password"] ) ) {
+			if ( $user->ValidateCredentials( $_REQUEST["password"] ) ) {
 				$resLog->ResourceID = $_REQUEST["resourceid"];
 				$resLog->VUNetID = $user->UserID;
 				$resLog->Note = $_REQUEST["purpose"];

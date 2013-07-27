@@ -44,7 +44,8 @@
 	
 	if ( $action == "Grant Access" ) {
 	   $req->EntryID = $_REQUEST["reqid"];
-	   $req->ApproveEntry( $facDB, $user->UserID );
+	   $req->AuthorizedBy=$user->UserID;
+	   $req->ApproveEntry();
 	} elseif ( $action == "Deny Access" ) {
 	   $req->EntryID = $_REQUEST["reqid"];
 	   $req->RemoveRequest($facDB);
