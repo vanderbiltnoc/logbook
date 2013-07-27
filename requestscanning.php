@@ -59,17 +59,13 @@
 			if(isset($_POST['requestid'])){
 				$user->CheckScanUser($facDB);
 				$scanjob->ScanID=$_POST['requestid'];
-				$pickup=$scanjob->GetWaitingJobs($facDB);
-				if($pickup!=0){
-					$validjob=0;
-					foreach($pickup as $row){
-						($row['ScanID']==$scanjob->ScanID)?$validjob=1:"";
-					}
-					if($validjob){
-						$users=$scanjob->GetAuthorizedUsers($facDB);
-						$scanjob->GetRecord($facDB);
-						if(is_array($users)){
-							if(isset($users[$user->CheckScanUser($facDB)])){
+				$pickup=$scanjob->GetWaitingJobs();
+				if(count($pickup)>0){
+					if(isset($pickup[$scanjob->ScanID])){
+						$users=$scanjob->GetAuthorizedUsers();
+						$scanjob=$pickup[$scanjob->ScanID];
+						if(count($users)>0){
+							if(isset($users[$user->CheckScanUser()])){
 								//user was authorized, log
 								$scanjob->DatePickedUp=date('Y-m-d H:i');
 								$scanjob->Authorized=0;

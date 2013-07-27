@@ -5,7 +5,7 @@
 
  	$user=new VUser();
 	$user->UserID=$_SERVER["REMOTE_USER"];
-	$user->GetUserRights($facDB); 
+	$user->GetUserRights(); 
 	$error="";
 
 	if(!$user->RackAdmin){
@@ -20,11 +20,11 @@
 	if(isset($_POST['e'])&&isset($_POST['s'])){
 		$tmpuser=new VUser();
 		$tmpuser->Email=$_POST['e'];
-		$check=$tmpuser->CheckScanUser($facDB);
+		$check=$tmpuser->CheckScanUser();
 		if($check){
 			$scanjob=New ScanJob();
 			$scanjob->ScanID=$_POST['s'];
-			echo ''.($scanjob->AddAuthorizedUsers($facDB,$check))?'1':'0';
+			echo ''.($scanjob->AddAuthorizedUsers($check))?'1':'0';
 		}else{
 			echo '0';
 		}		
@@ -36,7 +36,7 @@
 	if(isset($_POST['scanid'])&&isset($_POST['action'])){
 		$scanjob=New ScanJob();
 		$scanjob->ScanID=$_POST['scanid'];
-		$scanjob->GetRecord($facDB);
+		$scanjob->GetRecord();
 		if($_POST['action']=="processscan"){
 			if(isset($_POST['email'])&&isset($_POST['forms'])&&isset($_FILES['scanning'])){
 				// If any port other than 25 is specified, assume encryption and authentication
@@ -64,7 +64,7 @@
 					$tmpuser=new VUser();
 					$tmpuser->Email=$email;
 					// If we get a vunetid returned then go ahead and email them.
-					$tempid=$tmpuser->CheckScanUser($facDB);
+					$tempid=$tmpuser->CheckScanUser();
 					if($tempid!=""){
 						$validusers[]=$tempid;
 						try{
@@ -100,7 +100,7 @@
 				$scanjob->NOCAnalyst=$user->UserID;
 				$scanjob->NumForms=$_POST['forms'];
 				// don't attempt to update the record if there are no valid users.
-				if(count($validusers)>0 && $scanjob->ScanningJob($validusers,$facDB)==1){
+				if(count($validusers)>0 && $scanjob->ScanningJob($validusers)==1){
 					try{
 						$result=$mailer->send($message);
 					}catch(Swift_RfcComplianceException $e){
@@ -114,63 +114,62 @@
 			}
 		}elseif($_POST['action']=="override"){
 			$scanjob->Notes=$_POST['notes']." - $user->UserID";
-			$scanjob->Override($facDB);
+			$scanjob->Override();
 		}elseif($_POST['action']=="mail"){
 			$scanjob->DatePickedUp=date('Y-m-d H:i');
 			$scanjob->Authorized=1;
 			$scanjob->Pickup=$user->UserID;
 			$scanjob->Notes="Sent back via campus mail - $user->UserID";
-			$scanjob->PickupJob($facDB);
-			$scanjob->Override($facDB);
+			$scanjob->PickupJob();
+			$scanjob->Override();
 		}
 	}
 
 	$scanjob=New ScanJob();
-	$jobs=$scanjob->GetOpenJobs($facDB);
-	if(is_array($jobs)){
+	$jobs=$scanjob->GetOpenJobs();
+	if(count($jobs)>0){
 		//we have open jobs
 		$open='<tr><th>ScanID</th><th>Date Submitted</th><th>Course Number</th><th>Section</th></tr>';
-		foreach($jobs as $key => $row){
-			$open.="<tr><td>{$row['ScanID']}</td><td>{$row['DateSubmitted']}</td><td>{$row['CourseNumber']}</td><td>{$row['Section']}</td></tr>";
+		foreach($jobs as $key => $job){
+			$open.="<tr><td>$job->ScanID</td><td>$job->DateSubmitted</td><td>$job->CourseNumber</td><td>$job->Section</td></tr>";
 			// need to add in some js to add input blanks for number of forms scanned, email addresses for contacts
 		}
 	}else{
 		$open='<tr><td>There are no jobs waiting to be scanned.</td></tr>';
 	}
 	
-	$jobs=$scanjob->GetWaitingJobs($facDB);
-	if(is_array($jobs)){
+	$jobs=$scanjob->GetWaitingJobs();
+	if(count($jobs)>0){
 		//we have open jobs
 		$waiting='<tr><th>ScanID</th><th>Date Submitted</th><th>Date Scanned</th><th>Course Number</th><th>Section</th><th>Forms</th></tr>';
-		foreach($jobs as $key => $row){
-			$class=($row['Authorized']==1)?' class="noauth"':'';
-			$scanjob->ScanID=$row['ScanID'];
-			$users=$scanjob->GetAuthorizedUsers($facDB);
-			if(is_array($users)){
-				$title='Authorized Users:<br>';
+		foreach($jobs as $key => $job){
+			$class=($job->Authorized==1)?' class="noauth"':'';
+			$job->ScanID=$job->ScanID;
+			$users=$job->GetAuthorizedUsers();
+			if(count($users)>0){
+				$title="Authorized Users:<br>\n";
 				foreach($users as $key => $email){
-					$title.="$email<br>";
+					$title.="$email<br>\n";
 				}
-				$title.='"';
 			}else{
-				$title='No Authorized Users Listed"';
+				$title='No Authorized Users Listed';
 			}
-			$title=($row['Authorized']==1)?' title="REASON FOR OVERRIDE REQUIRED<br><br>'.$title:' title="'.$title;
-			$waiting.="<tr$class$title><td>{$row['ScanID']}</td><td>{$row['DateSubmitted']}</td><td>{$row['DateScanned']}</td><td>{$row['CourseNumber']}</td><td>{$row['Section']}</td><td>{$row['NumForms']}</td></tr>";
+			$title=($job->Authorized==1)?" title=\"REASON FOR OVERRIDE REQUIRED<br><br>\n$title\"":" title=\"$title\"";
+			$waiting.="<tr$class$title><td>$job->ScanID</td><td>$job->DateSubmitted</td><td>$job->DateScanned</td><td>$job->CourseNumber</td><td>$job->Section</td><td>$job->NumForms</td></tr>";
 			// need to add in some js to add input blanks for number of forms scanned, email addresses for contacts
 		}
 	}else{
 		$waiting='<tr><td>There are no scans waiting for pickup.</td></tr>';
 	}
 
-	$jobs=$scanjob->GetCompletedJobs($facDB);
-	if(is_array($jobs)){
+	$jobs=$scanjob->GetCompletedJobs();
+	if(count($jobs)>0){
 		//we have scans that have recently been picked up
 		$pickedup='<tr><th>ScanID</th><th>Date Submitted</th><th>Date Scanned</th><th>Date Pickedup</th><th>Course Number</th><th>Section</th><th>Forms</th><th>Picked up by</th></tr>';
-		foreach($jobs as $key => $row){
-			($row['Authorized']==1)?$class=' class="noauth"':$class=' class="auth"';
-			$pickedup.="<tr$class><td>{$row['ScanID']}</td><td>{$row['DateSubmitted']}</td><td>{$row['DateScanned']}</td><td>{$row['DatePickedUp']}</td><td>{$row['CourseNumber']}</td><td>{$row['Section']}</td><td>{$row['NumForms']}</td><td>{$row['Pickup']}</td></tr>";
-			($row['Authorized']==1)?$pickedup.="<tr$class><td colspan=8>{$row['Notes']}</td></tr>":"";
+		foreach($jobs as $key => $job){
+			($job->Authorized==1)?$class=' class="noauth"':$class=' class="auth"';
+			$pickedup.="<tr$class><td>$job->ScanID</td><td>$job->DateSubmitted</td><td>$job->DateScanned</td><td>$job->DatePickedUp</td><td>$job->CourseNumber</td><td>$job->Section</td><td>$job->NumForms</td><td>$job->Pickup</td></tr>";
+			($job->Authorized==1)?$pickedup.="<tr$class><td colspan=8>$job->Notes</td></tr>":"";
 			// need to add in some js to add input blanks for number of forms scanned, email addresses for contacts
 		}
 	}else{
@@ -179,7 +178,7 @@
 
 
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML>
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
@@ -196,8 +195,9 @@
   <script type="text/javascript" src="js/jquery.MultiFile.pack.js"></script>
   <script type="text/javascript">
 	$(document).ready(function() {
-		$(document).tooltip({
-			track: true
+		$('tr').each(function(){
+			//jquery-ui 1.10 html in tooltips work around
+			$(this).tooltip({content: $(this).attr('title'),track: true});
 		});
 		function closeit(){
 			$(this).next('tr').toggle();

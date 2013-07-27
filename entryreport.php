@@ -84,9 +84,8 @@
       
       $sql = "select a.*, b.Name as AuthorizeName, c.LastName, c.FirstName, d.Name as DataCenter from fac_DataCenterLog a, fac_User b, fac_Contact c, fac_DataCenter d where a.AuthorizedBy=b.UserID and a.VUNetID=c.UserID and a.DataCenterID=d.DataCenterID and a.DataCenterID=\"" . $datacenterid . "\"" . $startClause . $endClause . " order by RequestTime ASC";
       // $pdf->Write( 6, "SQL: " . $sql );
-      $result = mysql_query( $sql, $facDB );
-      
-      while ( $logRow = mysql_fetch_array( $result ) ) {
+
+	  foreach($dbh->query($sql) as $logRow){      
    			$pdf->Cell( $cellWidths[0], 6, $logRow["DataCenter"], 0, 0, "L", $fill );
    			$pdf->Cell( $cellWidths[1], 6, sprintf( "%s, %s", $logRow["LastName"], $logRow["FirstName"] ), 0, 0, "L", $fill );
    			$pdf->Cell( $cellWidths[2], 6, date( "m/d/Y\nH:i:s", strtotime( $logRow["TimeIn"] ) ), 0, 0, "L", $fill );
@@ -117,8 +116,6 @@
      	
      	$pdf->AddPage();
      	
-     	$sql = "select count(a.EntryID) as Entries, a.VUNetID, b.LastName, b.FirstName from fac_DataCenterLog a, fac_Contact b where a.VUNetID=b.UserID and a.DataCenterID=\"" . $datacenterid . "\" group by a.VUNetID order by Entries DESC";
-      $result = mysql_query( $sql, $facDB );
         
       $pdf->SetFont($config->ParameterArray["PDFfont"],'',10 );
       $headerTags = array( "Entries", "Contact Name", "VUNetID" );
@@ -142,8 +139,9 @@
       $pdf->SetTextColor( 0 );
       
       $fill = 0;
-      
-      while ( $logRow = mysql_fetch_array( $result ) ) {
+
+      $sql = "select count(a.EntryID) as Entries, a.VUNetID, b.LastName, b.FirstName from fac_DataCenterLog a, fac_Contact b where a.VUNetID=b.UserID and a.DataCenterID=\"" . $datacenterid . "\" group by a.VUNetID order by Entries DESC";
+	  foreach($dbh->query($sql) as $logRow){      
             $pdf->Cell( $cellWidths[0], 6, $logRow["Entries"], "LRBT", 0, "L", $fill );
             $pdf->Cell( $cellWidths[1], 6, sprintf( "%s, %s", $logRow["LastName"], $logRow["FirstName"] ), "LRBT", 0, "L", $fill );
             $pdf->Cell( $cellWidths[2], 6, $logRow["VUNetID"], "LRBT", 0, "L", $fill );

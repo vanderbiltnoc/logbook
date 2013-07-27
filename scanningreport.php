@@ -4,7 +4,7 @@
 
  	$user = new VUser();
 	$user->UserID = $_SERVER["REMOTE_USER"];
-	$user->GetUserRights( $facDB );
+	$user->GetUserRights();
 
 	if(!$user->RackAdmin){
 		header('Location: '.redirect("concierge.php"));
@@ -16,8 +16,8 @@
 	// course number autocomplete queries
 	if(isset($_GET['c'])){
 		$courselist=array();
-		$results=mysql_query("SELECT DISTINCT CourseNumber FROM fac_ScanningLog WHERE CourseNumber LIKE '%".addslashes($_GET['c'])."%';", $facDB);
-		while($row=mysql_fetch_row($results)){
+		$sql="SELECT DISTINCT CourseNumber FROM fac_ScanningLog WHERE CourseNumber LIKE '%".addslashes($_GET['c'])."%';";
+		foreach($dbh->query($sql) as $row){
 			$courselist[]=$row[0];
 		}
 	    header('Content-Type: application/json');
@@ -28,8 +28,8 @@
 	// vunetid autocomplete queries
 	if(isset($_GET['v'])){
 		$courselist=array();
-		$results=mysql_query("SELECT DISTINCT vunetid FROM fac_ScanningUsers WHERE vunetid LIKE '%".addslashes($_GET['v'])."%';", $facDB);
-		while($row=mysql_fetch_row($results)){
+		$sql="SELECT DISTINCT vunetid FROM fac_ScanningUsers WHERE vunetid LIKE '%".addslashes($_GET['v'])."%';";
+		foreach($dbh->query($sql) as $row){
 			$courselist[]=$row[0];
 		}
 	    header('Content-Type: application/json');
@@ -79,22 +79,20 @@
 		$sql=preg_replace('/^ AND/', ' WHERE', $sql, 1);
 		$sql=$staticsql.$sql;
 
-		// Search
-		$results=mysql_query($sql,$facDB);
-
 		// Output
-		if(mysql_num_rows($results)>0){
+		if($results=$dbh->query($sql)){
 			$pickedup='<table><tr><th>ScanID</th><th>Date Submitted</th><th>Date Scanned</th><th>Date Pickedup</th><th>Course Number</th><th>Section</th><th>Forms</th><th>Picked up by</th></tr>';
-			while($row=mysql_fetch_assoc($results)){
-				if($row['Authorized']==1){
+			foreach($results as $row){
+				$job=ScanJob::RowToObject($row);
+				if($job->Authorized==1){
 					$class=' class="noauth"';
-				}elseif($row['Authorized']=='0'){
+				}elseif($job->Authorized=='0'){
 					$class=' class="auth"';
 				}else{
 					$class='';
 				}
-				$pickedup.="<tr$class><td>{$row['ScanID']}</td><td>{$row['DateSubmitted']}</td><td>{$row['DateScanned']}</td><td>{$row['DatePickedUp']}</td><td>{$row['CourseNumber']}</td><td>{$row['Section']}</td><td>{$row['NumForms']}</td><td>{$row['Pickup']}</td></tr>";
-				($row['Authorized']==1)?$pickedup.="<tr$class><td colspan=8>{$row['Notes']}</td></tr>":"";
+				$pickedup.="<tr$class><td>$job->ScanID</td><td>$job->DateSubmitted</td><td>$job->DateScanned</td><td>$job->DatePickedUp</td><td>$job->CourseNumber</td><td>$job->Section</td><td>$job->NumForms</td><td>$job->Pickup</td></tr>";
+				($job->Authorized==1)?$pickedup.="<tr$class><td colspan=8>$job->Notes</td></tr>":"";
 				// need to add in some js to add input blanks for number of forms scanned, email addresses for contacts
 			}
 			$pickedup.="</table>";

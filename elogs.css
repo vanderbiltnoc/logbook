@@ -255,6 +255,12 @@ table.scanme, table.scanned {
 
 /* Scanning Reporting - END */
 
+/* Data Center Entry Admin - START */
+.dcentryadmin .main table tr td:first-child { width: 150px; }
+.dcentryadmin .main table tr td + td { padding: 0px 0px 6px; vertical-align: top; }
+
+/* Data Center Entry Admin - END */
+
 /* Menu - Start */
 .menu input {
 	height: 25px;

@@ -27,7 +27,7 @@
               location.href=newurl;
   } 
   </script>\n</head>\n
-<body>\n<div id=\"header\"></div>\n<div class=\"page\">\n";
+<body>\n<div id=\"header\"></div>\n<div class=\"page dcentryadmin\">\n";
 
 	//Show me the goods
 	echo $header;
