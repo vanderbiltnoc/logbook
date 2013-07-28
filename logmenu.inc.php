@@ -17,6 +17,11 @@
 		<a href="../"><li>Data Center Inventory</li></a>
 <?php
 	}
+	if($user->SiteAdmin){
+?>
+		<a href="configuration.php"><li>Logbook Configuration</li></a>
+<?php
+	}
 ?>
 	</ul>
 	<hr>
