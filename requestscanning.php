@@ -3,6 +3,7 @@
 	require_once( "../facilities.inc.php" );
 
  	$user=new VUser();
+	$scanjob=New ScanJob();
 
 	// set $enfoce to 0 to restrict access to the NOC ip range
 	// checkip() default behavior is to enforce the range check
@@ -25,9 +26,9 @@
 	// password check
 	if(isset($_POST['p']) && isset($_POST['v']) && checkip($enforce) ){
 		$user->UserID=$_POST['v'];
-//		if($user->ValidateCredentials($_POST["p"])){
+		if($user->ValidateCredentials($_POST["p"])){
 			echo '1';
-//		}
+		}
 		exit;
 	}
 
@@ -37,9 +38,7 @@
 
 	if(isset($_POST['vunetid']) && isset($_POST['password'])){
 		$user->UserID=$_POST['vunetid'];
-//		if($user->ValidateCredentials($_POST["password"])){
-		if(true){
-			$scanjob=New ScanJob();
+		if($user->ValidateCredentials($_POST["password"])){
 			if(isset($_POST['course']) && count($_POST['course']>0)){
 				foreach($_POST['course'] as $key => $value){
 					if($_POST['course'][$key]!="" && $_POST['section'][$key]!=""){
@@ -98,7 +97,12 @@
 		}
 	}
 
-
+	$openjobs=$scanjob->GetWaitingJobs();
+	$requestselector='<select id="requestid" name="requestid" class="validate[required]"><option></option>';
+	foreach($openjobs as $jobid => $job){
+		$requestselector.="<option value=$job->ScanID>$job->ScanID :: $job->CourseNumber - $job->Section</option>";
+	}
+	$requestselector.='</select>';
 
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -208,7 +212,7 @@
 <table>
 	<tr>
 		<th>Request #</th>
-		<td colspan=3><input type="text" class="validate[required,custom[onlyNumberSp]]" id="requestid" name="requestid" value=""></td>
+		<td colspan=3><?php echo $requestselector; ?></td>
 	</tr>
 	<tr>
 		<th>VUnetID</th>
