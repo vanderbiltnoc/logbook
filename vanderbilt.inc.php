@@ -1,6 +1,7 @@
 <?php
 
-$rrmenu[]='<a href="elogs/"><span>'.__("Log Book").'</span></a>';
+// Make sure that the logbook item appears first in the main menu
+array_unshift($rmenu , '<a href="elogs/"><span>'.__("Log Book").'</span></a>');
 
 Class VUser extends User {
     // LDAP variables
