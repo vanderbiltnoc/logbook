@@ -1,5 +1,7 @@
 <?php
 
+$rrmenu[]='<a href="elogs/"><span>'.__("Log Book").'</span></a>';
+
 Class VUser extends User {
     // LDAP variables
     var $basedn;
