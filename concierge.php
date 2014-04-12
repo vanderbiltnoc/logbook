@@ -129,6 +129,10 @@
 				$resLog->Note = $_REQUEST["purpose"];
 				$resLog->EstimatedReturn = date( "Y-m-d H:i:s", strtotime( $_REQUEST["estimatedreturn"] ) );
 				$resLog->RequestResource();
+				if(preg_match("/paid\ parking/i",$res->Description)){
+					$resLog->CheckoutResource($facDB);
+					$resLog->CheckinResource($facDB);
+				}
 			}else{  // If password fails refill the form
 				$reqpurpose=$_REQUEST["purpose"];
 				$reqtime=$_REQUEST["estimatedreturn"];
