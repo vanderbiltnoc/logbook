@@ -4,6 +4,3 @@ openDCIM.logbook
 	Intended to be a proprietary extension of openDCIM for use by Vanderbilt for 
 	the purposes of tracking datacenter entry and other resources available 
 	through the NOC.
-
-	This repo is missing critical methods that will make this work, until they can
-	be sanitized of proprietary information.
