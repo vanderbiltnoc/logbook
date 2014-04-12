@@ -109,6 +109,9 @@
 		if($res->Status == "Reserved"){
 			$resLog->ResourceID = $_REQUEST["resourceid"];
 			$resLog->CheckoutResource($facDB);
+			if(preg_match("/paid\ parking/i",$res->Description)){
+				$resLog->CheckinResource($facDB);
+			}
 		}
 	}elseif($action == "CheckIn"){
 		$res->ResourceID = $_REQUEST["resourceid"];
