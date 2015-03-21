@@ -19,8 +19,6 @@
 			}
 		}
 	}
-
-
 ?>
 <!DOCTYPE HTML>
 <html>

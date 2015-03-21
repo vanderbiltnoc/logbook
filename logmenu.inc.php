@@ -14,12 +14,15 @@
 		<a href="resourcelog.php"><li>Resource Log Report</li></a>
 		<a href="entryreport.php"><li>Data Center Entry Log Report</li></a>
 		<a href="scanningreport.php"><li>Scanning Report</li></a>
+		<a href="vusurplusentry.php"><li>Surplus Entry</li></a>
+		<a href="vusurplussearch.php"><li>Surplus Search</li></a>
 		<a href="../"><li>Data Center Inventory</li></a>
 <?php
 	}
 	if($user->SiteAdmin){
 ?>
 		<a href="configuration.php"><li>Logbook Configuration</li></a>
+		<a href="vusurplusconfig.php"><li>Surplus Configuration</li></a>
 <?php
 	}
 ?>
