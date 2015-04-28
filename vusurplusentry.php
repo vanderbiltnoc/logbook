@@ -43,7 +43,7 @@
 
   <script type="text/javascript">
 	$(document).ready(function(){
-		$('#sel_devtype, #sel_manf, #sel_numdrives').on('change blur mouseup',function(e){
+		$('#sel_devtype, #sel_manf, #sel_numdrives').on('change',function(e){
 			buildForm();
 		});
 	});
@@ -90,7 +90,17 @@
 			var seldrv=$('#sel_numdrives');
 			var replacementdiv=$('<div>').attr('id','drivediv');
 			if(seldrv.val()>0){
+				$.ajax({url: '',type: 'get', async: false, data: {vusurplus:'',getlocations:''}}).done(function(data){
+					locations=data;
+				});
 				replacementdiv.append($('<span>').text('Hard drives'));
+				// Add in a select box of locations to store the drives for disposal
+				var sellocation=$('<select>').attr({'id':'location','name':'location'});
+				for(var x in locations){
+					sellocation.append($('<option>').val(locations[x].Location).text(locations[x].Location));
+				}
+				replacementdiv.append($('<label>').attr('for','location').text('Storage bin location'));
+				replacementdiv.append(sellocation.val(($('#location').val())?$('#location').val():sellocation.val()));
 				for(var i=1;i<=seldrv.val();i++){
 					var drive=$('<input>').attr({'id':'hd'+i,'name':'hd[]'}).data('label','Hard Drive Serial #'+i).val($('#hd'+i).val());
 					replacementdiv.append(drive);
@@ -118,7 +128,7 @@
 		// The float was causing the labels to align funny and the different browsers have
 		// different heights for the input boxes.  This will show em. 
 		function fixHeight(target){
-			target.css('line-height',target.next('input').outerHeight()+'px');
+			target.css('line-height',target.next('input,select').outerHeight()+'px');
 		}
 
 		// This is what we do when we submit the form

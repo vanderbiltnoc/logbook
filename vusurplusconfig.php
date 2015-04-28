@@ -185,12 +185,12 @@
 <div id="target"></div>
 
 <table>
-<tr><th>Certificate of Destruction</th><th>Created By</th><th># Drives</th></tr>
+<tr><th>Certificate of Destruction</th><th>Storage Location</th><th>Created By</th><th># Drives</th></tr>
 <?php
 	foreach($cods as $i => $hd){
 		$disabled=($hd->DestructionCertificationID=="")?'id="codid"':'disabled';
 		$user=($hd->DestructionCertificationID=="")?$user->UserID:$hd->UserID;
-		print "<tr><td><input $disabled value=\"$hd->DestructionCertificationID\"></td><td><input disabled value=\"$user\"></td><td>$hd->Disks</td></tr>\n";
+		print "<tr><td><input $disabled value=\"$hd->DestructionCertificationID\"></td><td><input disabled value=\"$hd->Location\"></td><td><input disabled value=\"$user\"></td><td>$hd->Disks</td></tr>\n";
 	}
 ?>
 </table>

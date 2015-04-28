@@ -156,6 +156,7 @@ class SurplusHD {
 		$this->DiskID=intval($this->DiskID);
 		$this->SurplusID=intval($this->SurplusID);
 		$this->UserID=sanitize($this->UserID);
+		$this->Location=sanitize($this->Location);
 		$this->Serial=sanitize($this->Serial);
 		$this->DestructionCertificationID=sanitize($this->DestructionCertificationID);
 		$this->CertificationDate=(date('Y',strtotime($this->CertificationDate))==1969)?date('Y-m-d H:i:s'):date('Y-m-d H:i:s', strtotime($this->CertificationDate));
@@ -163,6 +164,7 @@ class SurplusHD {
 
 	function MakeDisplay(){
 		$this->UserID=stripslashes($this->UserID);
+		$this->Location=stripslashes($this->Location);
 		$this->Serial=stripslashes($this->Serial);
 		$this->DestructionCertificationID=stripslashes($this->DestructionCertificationID);
 	}
@@ -172,6 +174,7 @@ class SurplusHD {
 		$hd->DiskID=$row["DiskID"];
 		$hd->SurplusID=$row["SurplusID"];
 		$hd->UserID=$row["UserID"];
+		$hd->Location=$row["Location"];
 		$hd->Serial=$row["Serial"];
 		$hd->DestructionCertificationID=$row["DestructionCertificationID"];
 		$hd->CertificationDate=$row["CertificationDate"];
@@ -185,7 +188,7 @@ class SurplusHD {
 		$this->MakeSafe();
 
 		$sql="INSERT INTO vu_SurplusHD SET SurplusID=$this->SurplusID, 
-			Serial=\"$this->Serial\";";
+			Serial=\"$this->Serial\", Location=\"$this->Location\";";
 
 		if(!$result=mysql_query($sql,$facDB)){
 			return false;
@@ -226,15 +229,17 @@ class SurplusHD {
 
 	static function GetDestructionStats(){
 		global $facDB;
-		$sql="SELECT DISTINCT DestructionCertificationID, UserID, (SELECT COUNT(DiskID) 
-			FROM vu_SurplusHD WHERE a.DestructionCertificationID = 
-			DestructionCertificationID) AS Disks, CertificationDate FROM vu_SurplusHD a 
-			ORDER BY CertificationDate DESC;";
+		$sql="SELECT DISTINCT DestructionCertificationID, UserID, Location, 
+			(SELECT COUNT(DiskID) FROM vu_SurplusHD WHERE a.DestructionCertificationID = 
+			DestructionCertificationID AND a.Location = Location) AS Disks, 
+			CertificationDate FROM vu_SurplusHD a GROUP BY Location, 
+			DestructionCertificationID ORDER BY CertificationDate DESC;";
 		$result=mysql_query($sql,$facDB);
 		$records=array();
 		while($row=mysql_fetch_array($result)){
 			$hd=new SurplusHD();
 			$hd->UserID=$row["UserID"];
+			$hd->Location=$row["Location"];
 			$hd->DestructionCertificationID=$row["DestructionCertificationID"];
 			$hd->CertificationDate=$row["CertificationDate"];
 			$hd->Disks=$row["Disks"];
@@ -269,7 +274,8 @@ class SurplusHD {
 		$sql="UPDATE vu_SurplusHD SET 
 			DestructionCertificationID=\"$this->DestructionCertificationID\", 
 			CertificationDate=NOW(), UserID=\"$this->UserID\"
-			WHERE UserID='' AND CertificationDate=\"0000-00-00 00:00:00\";";
+			WHERE UserID='' AND CertificationDate=\"0000-00-00 00:00:00\" AND 
+			Location=\"$this->Location\";";
 
 		$result=mysql_query($sql,$facDB);
 		if(!mysql_affected_rows($facDB)){
@@ -375,6 +381,42 @@ class SurplusConfig {
 		}
 	}
 }
+
+// this is total overkill for this info but maybe it'll be something else later
+class SurplusLocation {
+	var $Location;
+
+	function MakeSafe(){
+		$this->Location=sanitize($this->Location);
+	}
+
+	function MakeDisplay(){
+		$this->Location=stripslashes($this->Location);
+	}
+
+	static function RowToObject($row){
+		$sl=new SurplusLocation();
+		$sl->Location=$row["Location"];
+		$sl->MakeDisplay();
+
+		return $sl;
+	}
+
+	static function GetLocations(){
+		global $facDB;
+		$sql="SELECT * FROM vu_SurplusLocations ORDER BY Location ASC;";
+
+		$result=mysql_query($sql,$facDB);
+
+		$records=array();
+		while($row=mysql_fetch_array($result)){
+			$records[]=SurplusLocation::RowToObject($row);
+		}
+
+		return $records;
+	}
+}
+
 // Surplus AJAX functions
 if(isset($_REQUEST['vusurplus']) && $user->RackAdmin){
 	header('Content-Type: application/json');
@@ -398,6 +440,7 @@ if(isset($_REQUEST['vusurplus']) && $user->RackAdmin){
 				$hd=new SurplusHD();
 				$hd->SurplusID=$s->SurplusID;
 				$hd->Serial=$serial;
+				$hd->Location=$_POST["location"];
 				if($hd->CreateDrive()){
 					$drives[]=$hd->DiskID;
 				}else{
@@ -515,6 +558,10 @@ if(isset($_REQUEST['vusurplus']) && $user->RackAdmin){
 
 	if(isset($_GET['authorizedusers'])){
 		$result=SurplusConfig::GetUsers();
+	}
+
+	if(isset($_GET['getlocations'])){
+		$result=SurplusLocation::GetLocations();
 	}
 
 	if(isset($_GET['getdrives'])){
