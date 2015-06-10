@@ -2,12 +2,9 @@
 	require_once( "../db.inc.php" );
 	require_once( "../facilities.inc.php" );
 
- 	$user = new VUser();
-	$user->UserID = $_SERVER["REMOTE_USER"];
-	$user->GetUserRights();
-
-	if ( ! $user->RackAdmin ) {
-		printf( "<meta http-equiv='refresh' content='0; url=concierge.php'>" );
+	if(!$person->RackAdmin){
+		// No soup for you.
+		header('Location: '.redirect('concierge.php'));
 		exit;
 	}
 
@@ -190,7 +187,7 @@
 	include( "logmenu.inc.php" );
 	
 	$dc=new DataCenter();
-	$dcList=$dc->GetDCList($facDB);
+	$dcList=$dc->GetDCList();
 ?>
 <div class="main">
 <h2>Enter criteria for the report:</h2>

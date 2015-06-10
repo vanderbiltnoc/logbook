@@ -2,13 +2,10 @@
 	require_once( "../db.inc.php" );
 	require_once( "../facilities.inc.php" );
 
- 	$user = new VUser();
-	$user->UserID = $_SERVER["REMOTE_USER"];
-	$user->GetUserRights( $facDB );
-
-	if ( ! $user->RackAdmin ) {
-		printf( "<meta http-equiv='refresh' content='0; url=concierge.php'>" );
-		end;
+	if(!$person->RackAdmin){
+		// No soup for you.
+		header('Location: '.redirect('concierge.php'));
+		exit;
 	}
 
 	if(isset($_POST['st'])){
@@ -25,8 +22,6 @@ WHERE fac_Resource.Description LIKE '%".addslashes($_POST['Resource'])."%'
 AND VUNetID LIKE '%".addslashes($_POST['VUNetID'])."%'$nocheckout$startClause$endClause
 AND fac_ResourceCategory.CategoryID LIKE '%".addslashes($_POST['Category'])."%'
 ORDER BY fac_ResourceLog.TimeOut ASC;";
-
-		$result=mysql_query($sql,$facDB);
 	}
 
 error_reporting(E_ALL);
@@ -62,7 +57,7 @@ $worksheet->SetCellValue("G1", "Time Checkedout");
 $worksheet->SetCellValue("H1", "Time Returned");
 
 $r=2;
-while($row=mysql_fetch_array($result)){
+foreach($dbh->query($sql) as $row){
 	$worksheet->SetCellValue("A$r", "{$row['VUNetID']}");
 	$worksheet->SetCellValue("B$r", "{$row['Resource']}");
 	$worksheet->SetCellValue("C$r", "{$row['Category']}");

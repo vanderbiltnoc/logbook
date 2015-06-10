@@ -2,10 +2,6 @@
 	require_once( "../db.inc.php" );
 	require_once( "../facilities.inc.php" );
 
-	$user = new VUser();
-	$user->UserID = $_SERVER["REMOTE_USER"];
-	$user->GetUserRights( $facDB );
-
 	// Init Variables
 	$thisfile = $_SERVER["PHP_SELF"];
 	$reqpurpose="";
@@ -27,14 +23,14 @@
 			if($rrow->Status == "Available"){
 				$class="available";
 			}else{
-				global $facDB;
 				$resLog=new ResourceLog();
 				$resLog->ResourceID=$rrow->ResourceID;
-				$resLog->GetCurrentStatus($facDB);
+				$resLog->GetCurrentStatus();
 
 				$tmpUser=new VUser();
 				$tmpUser->UserID=$resLog->VUNetID;
-				$userName=$tmpUser->GetName($facDB);
+				$tmpUser->GetPerson();
+				$userName=$tmpUser->GetName();
 
 				$rrow->Description.=" [$userName return ".date("M j H:i", strtotime($resLog->EstimatedReturn))."]";
 				if($rrow->Status == "Out"){
@@ -51,11 +47,11 @@
 	}
 
 	// Expire reservations that are older than 15 minutes
-	$res->ExpireReservations($facDB);
+	$res->ExpireReservations();
 
 	// AJAX returns
 	if(isset($_GET['updatelist'])){
-		echo buildresourcelist($res->GetActiveResources($facDB));
+		echo buildresourcelist($res->GetActiveResources());
 		exit;
 	}
 	// END AJAX
@@ -111,27 +107,27 @@
 
 	$resLog = new ResourceLog();
 	$tmpUser = new VUser();
-
 	
 	$action = @$_REQUEST["action"];
 	
 	if ( $action == "Request" ) {
 		$res->ResourceID = $_REQUEST["resourceid"];
-		$res->GetResource( $facDB );
+		$res->GetResource();
 		
 		// You can only check out an available resource
 		if($res->Status == "Available"){
 			// Validate the user
-			$user->UserID = $_REQUEST["vunetid"];
-			if ( $user->ValidateCredentials( $_REQUEST["password"] ) ) {
-				$resLog->ResourceID = $_REQUEST["resourceid"];
-				$resLog->VUNetID = $user->UserID;
-				$resLog->Note = $_REQUEST["purpose"];
-				$resLog->EstimatedReturn = date( "Y-m-d H:i:s", strtotime( $_REQUEST["estimatedreturn"] ) );
+			$user=new VUser();
+			$user->UserID=$_REQUEST["vunetid"];
+			if($user->ValidateCredentials($_REQUEST["password"])){
+				$resLog->ResourceID=$_REQUEST["resourceid"];
+				$resLog->VUNetID=$user->UserID;
+				$resLog->Note=$_REQUEST["purpose"];
+				$resLog->EstimatedReturn=date("Y-m-d H:i:s",strtotime($_REQUEST["estimatedreturn"]));
 				$resLog->RequestResource();
 				if(preg_match("/paid\ parking/i",$res->Description)){
-					$resLog->CheckoutResource($facDB);
-					$resLog->CheckinResource($facDB);
+					$resLog->CheckoutResource();
+					$resLog->CheckinResource();
 				}
 			}else{  // If password fails refill the form
 				$reqpurpose=$_REQUEST["purpose"];
@@ -147,7 +143,7 @@
 				$statusnote="checked out";
 				$statusnoteext=".";
 			}else{ // else it is reserved
-				$x=distanceOfTimeInWords($res->ReservationTTL($facDB));
+				$x=distanceOfTimeInWords($res->ReservationTTL());
 				$statusnote="reserved";
 				$statusnoteext=" and they have $x minutes to claim it.";
 			}
@@ -162,11 +158,11 @@
 		}
 	} 
 	$cat = new ResourceCategory();
-	$catList = $cat->GetCategoryList($facDB);
+	$catList = $cat->GetCategoryList();
 	
 	if(@$_REQUEST["categoryid"] > 0){
 		$cat->CategoryID = $_REQUEST["categoryid"];
-		$cat->GetCategory($facDB);
+		$cat->GetCategory();
 	}
 	
 	$body.="<h3 class=\"error\">$statusmessage</h3><form action=\"$thisfile\" id=\"resourcecheckout\" method=\"POST\">\n<table>\n<tr>\n<th>Resource Category</th>\n<td><input type=\"hidden\" name=\"action\" value=\"query\"><select name=\"categoryid\" onChange=\"form.submit()\">\n<option value=0>All Categories</option>\n";
@@ -184,9 +180,9 @@
 	$res->CategoryID = $cat->CategoryID;
 	
 	if ($cat->CategoryID > 0){
-		$resList = $res->GetActiveResourcesByCategory($facDB);
+		$resList = $res->GetActiveResourcesByCategory();
 	}else{
-		$resList = $res->GetActiveResources($facDB);
+		$resList = $res->GetActiveResources();
 	}
 
 	$body.=buildresourcelist($resList);

@@ -3,7 +3,7 @@
 	require_once('../facilities.inc.php');
 	require_once('vusurplus.inc.php');
 
-	if(!$user->SiteAdmin){
+	if(!$person->SiteAdmin){
 		// No soup for you.
 		header('Location: '.redirect("concierge.php"));
 		exit;
@@ -189,7 +189,7 @@
 <?php
 	foreach($cods as $i => $hd){
 		$disabled=($hd->DestructionCertificationID=="")?'id="codid"':'disabled';
-		$user=($hd->DestructionCertificationID=="")?$user->UserID:$hd->UserID;
+		$user=($hd->DestructionCertificationID=="")?$person->UserID:$hd->UserID;
 		print "<tr><td><input $disabled value=\"$hd->DestructionCertificationID\"></td><td><input disabled value=\"$hd->Location\"></td><td><input disabled value=\"$user\"></td><td>$hd->Disks</td></tr>\n";
 	}
 ?>

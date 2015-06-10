@@ -2,11 +2,7 @@
 	require_once( "../db.inc.php" );
 	require_once( "../facilities.inc.php" );
 
- 	$user = new VUser();
-	$user->UserID = $_SERVER["REMOTE_USER"];
-	$user->GetUserRights();
-
-	if(!$user->RackAdmin){
+	if(!$person->RackAdmin){
 		header('Location: '.redirect("concierge.php"));
 		exit;
 	}

@@ -3,12 +3,9 @@
 	require_once( "../facilities.inc.php" );
 	require_once( '../swiftmailer/swift_required.php' );
 
- 	$user=new VUser();
-	$user->UserID=$_SERVER["REMOTE_USER"];
-	$user->GetUserRights(); 
 	$error="";
 
-	if(!$user->RackAdmin){
+	if(!$person->RackAdmin){
 		// No soup for you.
 		header('Location: '.redirect());
 		exit;
@@ -97,7 +94,7 @@
 
 				// update record here, before sending email.
 				$scanjob->DateScanned=date('Y-m-d H:i');
-				$scanjob->NOCAnalyst=$user->UserID;
+				$scanjob->NOCAnalyst=$person->UserID;
 				$scanjob->NumForms=$_POST['forms'];
 				// don't attempt to update the record if there are no valid users.
 				if(count($validusers)>0 && $scanjob->ScanningJob($validusers)==1){
@@ -113,13 +110,13 @@
 				}
 			}
 		}elseif($_POST['action']=="override"){
-			$scanjob->Notes=$_POST['notes']." - $user->UserID";
+			$scanjob->Notes=$_POST['notes']." - $person->UserID";
 			$scanjob->Override();
 		}elseif($_POST['action']=="mail"){
 			$scanjob->DatePickedUp=date('Y-m-d H:i');
 			$scanjob->Authorized=1;
-			$scanjob->Pickup=$user->UserID;
-			$scanjob->Notes="Sent back via campus mail - $user->UserID";
+			$scanjob->Pickup=$person->UserID;
+			$scanjob->Notes="Sent back via campus mail - $person->UserID";
 			$scanjob->PickupJob();
 			$scanjob->Override();
 		}

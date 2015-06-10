@@ -1,9 +1,5 @@
 <?php
 
-$user=new VUser();
-$user->UserID=$_SERVER["REMOTE_USER"];
-$user->GetUserRights(); 
-
 /* Generic html sanitization routine */
 if(!function_exists("sanitize")){
 	function sanitize($string,$stripall=true){
@@ -77,8 +73,22 @@ class Surplus {
 		return $s;
 	}
 
+	function query($sql){
+		global $dbh;
+		return $dbh->query($sql);
+	}
+
+	function exec($sql){
+		global $dbh;
+		return $dbh->exec($sql);
+	}
+
+	function lastInsertId(){
+		global $dbh;
+		return $dbh->lastInsertId();
+	}
+
 	function CreateSurplus(){
-		global $facDB;
 		$this->UserID=$_SERVER["REMOTE_USER"];
 		$this->MakeSafe();
 
@@ -87,22 +97,20 @@ class Surplus {
 			Model=\"$this->Model\", Serial=\"$this->Serial\", 
 			AssetTag=\"$this->AssetTag\", Created=\"$this->Created\";";
 
-		if(!$result=mysql_query($sql,$facDB)){
-			return 0;
+		if(!$this->exec($sql)){
+			return false;
+		}else{
+			$this->SurplusID=$this->lastInsertId();
+			return $this->SurplusID;
 		}
-
-		$this->SurplusID=mysql_insert_id($facDB);
-		return $this->SurplusID;
 	}
 
 	function GetSurplus(){
-		global $facDB;
 		$this->MakeSafe();
 
 		$sql="SELECT * FROM vu_Surplus WHERE SurplusID=$this->SurplusID;";
-		$result=mysql_query($sql,$facDB);
 
-		while($row=mysql_fetch_array($result)){
+		foreach($this->query($sql) as $row){
 			foreach(Surplus::RowToObject($row) as $prop => $val){
 				$this->$prop=$val;
 			}
@@ -112,12 +120,10 @@ class Surplus {
 	}
 
 	static function GetSurpluses(){
-		global $facDB;
 		$sql="SELECT * FROM vu_Surplus;";
-		$result=mysql_query($sql,$facDB);
 
 		$records=array();
-		while($row=mysql_fetch_array($result)){
+		foreach(self::query($sql) as $row){
 			$records[]=Surplus::RowToObject($row);
 		}
 
@@ -126,7 +132,6 @@ class Surplus {
 
 	function RemoveSurplus(){
 		// this should only be used for error controls
-		global $facDB;
 		$this->MakeSafe();
 
 		$sql="DELETE FROM vu_Surplus WHERE SurplusID=$this->SurplusID;";
@@ -135,7 +140,7 @@ class Surplus {
 		$hd->SurplusHD=$this->SurplusHD;
 		$hd->RemoveDrives();
 
-		if(!$result=mysql_query($sql,$facDB)){
+		if(!$this->exec($sql)){
 			return false;
 		}else{
 			return true;
@@ -183,30 +188,42 @@ class SurplusHD {
 		return $hd;
 	}
 
+	function query($sql){
+		global $dbh;
+		return $dbh->query($sql);
+	}
+
+	function exec($sql){
+		global $dbh;
+		return $dbh->exec($sql);
+	}
+
+	function lastInsertId(){
+		global $dbh;
+		return $dbh->lastInsertId();
+	}
+
 	function CreateDrive(){
-		global $facDB;
 		$this->MakeSafe();
 
 		$sql="INSERT INTO vu_SurplusHD SET SurplusID=$this->SurplusID, 
 			Serial=\"$this->Serial\", Location=\"$this->Location\";";
 
-		if(!$result=mysql_query($sql,$facDB)){
+		if(!$this->exec($sql)){
 			return false;
 		}else{
-			$this->DiskID=mysql_insert_id($facDB);
+			$this->DiskID=$this->lastInsertId();
 			return $this->DiskID;
 		}
 	}
 
 	function GetDrives(){
-		global $facDB;
 		$this->MakeSafe();
 
 		$sql="SELECT * FROM vu_SurplusHD WHERE SurplusID=$this->SurplusID;";
-		$result=mysql_query($sql,$facDB);
 
 		$records=array();
-		while($row=mysql_fetch_array($result)){
+		foreach($this->query($sql) as $row){
 			$records[]=SurplusHD::RowToObject($row);
 		}
 
@@ -215,12 +232,11 @@ class SurplusHD {
 
 	function RemoveDrives(){
 		// this function should only be used for error controls
-		global $facDB;
 		$this->MakeSafe();
 
 		$sql="DELETE FROM vu_SurplusHD WHERE SurplusID=$this->SurplusID;";
 
-		if(!$result=mysql_query($sql,$facDB)){
+		if(!$this->exec($sql)){
 			return false;
 		}else{
 			return true;
@@ -228,15 +244,13 @@ class SurplusHD {
 	}
 
 	static function GetDestructionStats(){
-		global $facDB;
 		$sql="SELECT DISTINCT DestructionCertificationID, UserID, Location, 
 			(SELECT COUNT(DiskID) FROM vu_SurplusHD WHERE a.DestructionCertificationID = 
 			DestructionCertificationID AND a.Location = Location) AS Disks, 
 			CertificationDate FROM vu_SurplusHD a GROUP BY Location, 
 			DestructionCertificationID ORDER BY CertificationDate DESC;";
-		$result=mysql_query($sql,$facDB);
 		$records=array();
-		while($row=mysql_fetch_array($result)){
+		foreach(self::query($sql) as $row){
 			$hd=new SurplusHD();
 			$hd->UserID=$row["UserID"];
 			$hd->Location=$row["Location"];
@@ -250,25 +264,23 @@ class SurplusHD {
 	}
 
 	function GetUncertifiedDrives($count=null){
-		global $facDB;
 		$sql="SELECT * FROM vu_SurplusHD WHERE UserID=\"\";";
-		$result=mysql_query($sql,$facDB);
 
 		$records=array();
 		if(is_null($count)){
-			while($row=mysql_fetch_array($result)){
+			foreach($this->query($sql) as $row){
 				$records[]=SurplusHD::RowToObject($row);
 			}
 		}else{
-			$records=mysql_num_rows($result);
+			$records=$this->query($sql)->rowCount();
 		}
 
 		return $records;
 	}
 
 	function CertifyDrives(){
-		global $facDB;
-		$this->UserID=$_SERVER["REMOTE_USER"];
+		$current=People::Current();
+		$this->UserID=$current->UserID;
 		$this->MakeSafe();
 
 		$sql="UPDATE vu_SurplusHD SET 
@@ -277,8 +289,7 @@ class SurplusHD {
 			WHERE UserID='' AND CertificationDate=\"0000-00-00 00:00:00\" AND 
 			Location=\"$this->Location\";";
 
-		$result=mysql_query($sql,$facDB);
-		if(!mysql_affected_rows($facDB)){
+		if(!$this->exec($sql)){
 			return false;
 		}else{
 			return true;
@@ -286,8 +297,8 @@ class SurplusHD {
 	}
 
 	function CertifyDestruction(){
-		global $facDB;
-		$this->UserID=$_SERVER["REMOTE_USER"];
+		$current=People::Current();
+		$this->UserID=$current->UserID;
 		$this->MakeSafe();
 
 		$sql="UPDATE vu_SurplusHD SET 
@@ -295,8 +306,7 @@ class SurplusHD {
 			CertificationDate=\"$this->CertificationDate\", UserID=\"$this->UserID\"
 			WHERE DiskID=$this->DiskID AND SurplusID=$this->SurplusID;";
 
-		$result=mysql_query($sql,$facDB);
-		if(!mysql_affected_rows($facDB)){
+		if(!$this->exec($sql)){
 			return false;
 		}else{
 			return true;
@@ -317,6 +327,21 @@ class SurplusConfig {
 		$this->UserID=stripslashes($this->UserID);
 	}
 
+	function query($sql){
+		global $dbh;
+		return $dbh->query($sql);
+	}
+
+	function exec($sql){
+		global $dbh;
+		return $dbh->exec($sql);
+	}
+
+	function lastInsertId(){
+		global $dbh;
+		return $dbh->lastInsertId();
+	}
+
 	static function RowToObject($row){
 		$sc=new SurplusConfig();
 		$sc->UserIndex=$row["UserIndex"];
@@ -327,27 +352,24 @@ class SurplusConfig {
 	}
 
 	function CreateUser(){
-		global $facDB;
 		$this->MakeSafe();
 
 		$sql="INSERT INTO vu_SurplusConfig SET UserID=\"$this->UserID\";";
 
-		if(!$result=mysql_query($sql,$facDB)){
+		if(!$this->query($sql)){
 			return false;
 		}else{
-			$this->UserIndex=mysql_insert_id($facDB);
+			$this->UserIndex=$this->lastInsertId();
 			return $this->UserIndex;
 		}
 	}
 
 	function RemoveUser(){
-		global $facDB;
 		$this->MakeSafe();
 
 		$sql="DELETE FROM vu_SurplusConfig WHERE UserIndex=$this->UserIndex;";
 
-		$result=mysql_query($sql,$facDB);
-		if(!mysql_affected_rows($facDB)){
+		if(!$this->exec($sql)){
 			return false;
 		}else{
 			return true;
@@ -355,13 +377,10 @@ class SurplusConfig {
 	}
 
 	static function GetUsers(){
-		global $facDB;
-
 		$sql="SELECT * FROM vu_SurplusConfig;";
-		$result=mysql_query($sql,$facDB);
 
 		$records=array();
-		while($row=mysql_fetch_array($result)){
+		foreach(self::query($sql) as $row){
 			$records[]=SurplusConfig::RowToObject($row);
 		}
 
@@ -369,13 +388,10 @@ class SurplusConfig {
 	}
 
 	static function CheckUser($UserID){
-		global $facDB;
-
 		$sql="SELECT * FROM vu_SurplusConfig WHERE UserID=\"".addslashes($UserID)."\";";
 
-		$result=mysql_query($sql,$facDB);
-		if(mysql_num_rows($result)>0){
-			return SurplusConfig::RowToObject(mysql_fetch_row($result));
+		if($row=self::query($sql)->fetch()){
+			return SurplusConfig::RowToObject($row);
 		}else{
 			return false;
 		}
@@ -403,13 +419,12 @@ class SurplusLocation {
 	}
 
 	static function GetLocations(){
-		global $facDB;
+		global $dbh;
+
 		$sql="SELECT * FROM vu_SurplusLocations ORDER BY Location ASC;";
 
-		$result=mysql_query($sql,$facDB);
-
 		$records=array();
-		while($row=mysql_fetch_array($result)){
+		foreach($dbh->query($sql) as $row){
 			$records[]=SurplusLocation::RowToObject($row);
 		}
 
@@ -418,7 +433,7 @@ class SurplusLocation {
 }
 
 // Surplus AJAX functions
-if(isset($_REQUEST['vusurplus']) && $user->RackAdmin){
+if(isset($_REQUEST['vusurplus']) && $person->RackAdmin){
 	header('Content-Type: application/json');
 	$result=array();
 
@@ -498,12 +513,10 @@ if(isset($_REQUEST['vusurplus']) && $user->RackAdmin){
 			$search.="WHERE SurplusID IN (SELECT DISTINCT SurplusID FROM vu_SurplusHD $subsearch)";
 		}
 
-
 		$searchresults=array();
 		$sql="SELECT *, (SELECT COUNT(DiskID) FROM vu_SurplusHD WHERE SurplusID=a.SurplusID) AS Disks FROM vu_Surplus a $search;";
-		$result=mysql_query($sql,$facDB);
 
-		while($row=mysql_fetch_array($result)){
+		foreach($dbh->query($sql) as $row){
 			$s=Surplus::RowToObject($row);
 			$s->Disks=$row['Disks'];
 			$searchresults[]=$s;
@@ -511,7 +524,7 @@ if(isset($_REQUEST['vusurplus']) && $user->RackAdmin){
 		$result=$searchresults;
 	}
 
-	if(isset($_POST['updatedrive']) && SurplusConfig::CheckUser($user->UserID)){
+	if(isset($_POST['updatedrive']) && SurplusConfig::CheckUser($person->UserID)){
 		foreach($_POST as $prop => $val){
 			if(preg_match('/^hd[0-9]*/',$prop) && $val){
 				$hd=new SurplusHD();
@@ -525,9 +538,9 @@ if(isset($_REQUEST['vusurplus']) && $user->RackAdmin){
 		}
 	}
 
-	if(isset($_POST['certifydrives']) && SurplusConfig::CheckUser($user->UserID)){
+	if(isset($_POST['certifydrives']) && SurplusConfig::CheckUser($person->UserID)){
 		$hd=new SurplusHD();
-		$hd->UserID=$user->UserID;
+		$hd->UserID=$person->UserID;
 		$hd->DestructionCertificationID=$_POST['DestructionCertificationID'];
 		if($hd->CertifyDrives()){
 			$result=true;
@@ -536,7 +549,7 @@ if(isset($_REQUEST['vusurplus']) && $user->RackAdmin){
 		}
 	}
 
-	if(isset($_POST['authorizeuser']) && $user->SiteAdmin){
+	if(isset($_POST['authorizeuser']) && $person->SiteAdmin){
 		$newuser=new SurplusConfig();
 		$newuser->UserID=$_POST['UserID'];
 
@@ -545,7 +558,7 @@ if(isset($_REQUEST['vusurplus']) && $user->RackAdmin){
 		}
 	}
 
-	if(isset($_POST['removeuser']) && $user->SiteAdmin){
+	if(isset($_POST['removeuser']) && $person->SiteAdmin){
 		$newuser=new SurplusConfig();
 		$newuser->UserIndex=$_POST['UserIndex'];
 
@@ -583,9 +596,8 @@ if(isset($_REQUEST['vusurplus']) && $user->RackAdmin){
 
 		$searchresults=array();
 		$sql="SELECT DISTINCT $st FROM vu_Surplus WHERE $st LIKE '%".addslashes($_GET[$st])."%';";
-		$result=mysql_query($sql,$facDB);
 
-		while($row=mysql_fetch_array($result)){
+		foreach($dbh->query($sql) as $row){
 			$searchresults[]=$row[0];
 		}
 		$result=$searchresults;

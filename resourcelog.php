@@ -2,13 +2,10 @@
 	require_once( "../db.inc.php" );
 	require_once( "../facilities.inc.php" );
 
- 	$user = new VUser();
-	$user->UserID = $_SERVER["REMOTE_USER"];
-	$user->GetUserRights( $facDB );
-
-	if ( ! $user->RackAdmin ) {
-		printf( "<meta http-equiv='refresh' content='0; url=concierge.php'>" );
-		end;
+	if(!$person->RackAdmin){
+		// No soup for you.
+		header('Location: '.redirect('concierge.php'));
+		exit;
 	}
 
 // AJAX
@@ -51,8 +48,7 @@ AND VUNetID LIKE '%".addslashes($_GET['VUNetID'])."%'$nocheckout$startClause$end
 AND fac_ResourceCategory.CategoryID LIKE '%".addslashes($_GET['Category'])."%'
 ORDER BY fac_ResourceLog.TimeOut ASC LIMIT 500;";
 		}
-		$result=mysql_query($sql,$facDB);
-		while($row=mysql_fetch_array($result)){
+		foreach($dbh->query($sql) as $row){
 			$searchresults[]=(isset($_GET['autocomplete']))?$row[0]:$row;
 		}
 
@@ -65,7 +61,7 @@ ORDER BY fac_ResourceLog.TimeOut ASC LIMIT 500;";
 
 
 	$cat=new ResourceCategory();
-	$catList=$cat->GetCategoryList($facDB);
+	$catList=$cat->GetCategoryList();
 
 // END - Ajax
 ?>

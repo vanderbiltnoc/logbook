@@ -3,6 +3,11 @@
 	require_once('../facilities.inc.php');
 	require_once('vusurplus.inc.php');
 
+	if(!$user->RackAdmin){
+		// No soup for you.
+		exit;
+	}
+
 	if(isset($_POST['search'])){
 		$validsearchkeys=array('SurplusID','Serial','AssetTag','DevType','Model','Manufacturer','UserID');
 		$validsubsearchkeys=array('Serial','UserID','DestructionCertificationID');
@@ -52,9 +57,8 @@
 
 		$searchresults=array();
 		$sql="SELECT *, (SELECT COUNT(DiskID) FROM vu_SurplusHD WHERE SurplusID=a.SurplusID) AS Disks FROM vu_Surplus a $search;";
-		$result=mysql_query($sql,$facDB);
 
-		while($row=mysql_fetch_array($result)){
+		foreach($dbh->query($sql) as $row){
 			$s=Surplus::RowToObject($row);
 			$s->Disks=$row['Disks'];
 			$searchresults[]=$s;

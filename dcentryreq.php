@@ -2,11 +2,6 @@
 	require_once( "../db.inc.php" );
 	require_once( "../facilities.inc.php" );
 
-	$user = new VUser();
-
-	$user->UserID = $_SERVER["REMOTE_USER"];
-	$user->GetUserRights( $facDB );
-
 	// Inititalize variables
         $thisfile = $_SERVER["PHP_SELF"];
         $reqpurpose="";
@@ -39,18 +34,19 @@
 	$dc = new DataCenter();
 	$contact = new Contact();
 	
-	$dcList = $dc->GetDCList( $facDB );
+	$dcList = $dc->GetDCList();
   
 	$action = @$_REQUEST["action"];
   
-	if ( $action == "Request" ) {
+	$user=new VUser();
+	if($action=="Request"){
 		// Validate the user
 		$user->UserID = $_REQUEST["vunetid"];
 		if($user->ValidateCredentials($_REQUEST["password"])){
-			$CN = $user->GetName($facDB);
+			$CN = $user->GetName();
 			// Now see if they are authorized for entry
 			$contact->UserID = $user->UserID;
-			if($contact->GetContactByUserID($facDB)){
+			if($contact->GetContactByUserID()){
 				$req->EscortRequired = 0;
 				$body.="<h3>Thank you, $CN.  Your request has been received and you are authorized for unescorted access into the data center.  Please proceed to the data center and contact an analyst for entry.</h3>";
 			}else{
@@ -61,7 +57,7 @@
 			$req->DataCenterID = $_REQUEST["datacenterid"];
 			$req->Reason = $_REQUEST["purpose"];
 			$req->GuestList = $_REQUEST["guestlist"];
-			$req->AddRequest( $facDB );
+			$req->AddRequest();
 			// Set the event type to datacenter.  This can be changed for future uses.
 			$req->EventType = "dcaccess";
 

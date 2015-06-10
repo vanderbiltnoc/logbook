@@ -2,13 +2,10 @@
 	require_once( "../db.inc.php" );
 	require_once( "../facilities.inc.php" );
 
- 	$user = new VUser();
-	$user->UserID = $_SERVER["REMOTE_USER"];
-	$user->GetUserRights( $facDB );
-
-	if ( ! $user->RackAdmin ) {
-		printf( "<meta http-equiv='refresh' content='0; url=concierge.php'>" );
-		end;
+	if(!$person->RackAdmin){
+		// No soup for you.
+		header('Location: '.redirect('concierge.php'));
+		exit;
 	}
 
 	$header="<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"><html>\n<head>\n<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n<title>Vanderbilt ITS Facilities Resource Concierge</title>\n<link rel=\"stylesheet\" href=\"css/inventory.php\" type=\"text/css\">\n<link rel=\"stylesheet\" href=\"elogs.css\" type=\"text/css\">\n<script src=\"js/jquery.min.js\" type=\"text/javascript\"></script>\n</head>\n<body>\n<div id=\"header\"></div>\n<div class=\"page\">\n";
@@ -24,7 +21,7 @@
 
 	if(@$_REQUEST["resourceid"] > 0){
   		$res->ResourceID = $_REQUEST["resourceid"];
-		$res->GetResource($facDB);
+		$res->GetResource();
 	}
 
 	if((@$_REQUEST["action"] == "Create") || (@$_REQUEST["action"] == "Update")){
@@ -36,16 +33,16 @@
 
 		if($_REQUEST["action"] == "Create"){
 			if (sizeof($res->Description) > 0){
-  				$res->CreateResource($facDB);
+  				$res->CreateResource();
 			}
 		}else{
-			$res->UpdateResource($facDB);
+			$res->UpdateResource();
 		}
 	}
-	$resourceList = $res->GetResources($facDB);
+	$resourceList = $res->GetResources();
 
 	$cat = new ResourceCategory();
-	$catList = $cat->GetCategoryList( $facDB );
+	$catList = $cat->GetCategoryList();
 
 	$body.="<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">\n<table><tr><th>Resource</th><td><input type=\"hidden\" name=\"action\" value=\"query\"><select name=\"resourceid\" onChange=\"form.submit()\">\n<option value=0>New Resource</option>\n";
 

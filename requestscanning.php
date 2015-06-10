@@ -32,8 +32,6 @@
 		exit;
 	}
 
-	$user->UserID=$_SERVER["REMOTE_USER"];
-	$user->GetUserRights($facDB); 
 	$error="";
 
 	if(isset($_POST['vunetid']) && isset($_POST['password'])){
@@ -48,7 +46,7 @@
 						$scanjob->Section=$_POST['section'][$key];
 						$scanjob->DateSubmitted=date('Y-m-d H:i');
 						$scanjob->Dropoff=$_POST['vunetid'];
-						$scanjob->Create($facDB);
+						$scanjob->Create();
 						if($scanjob->ScanID){
 							$error='Request logged.  Please hand originals to NOC staff.';
 						}
@@ -56,7 +54,7 @@
 				}
 			}
 			if(isset($_POST['requestid'])){
-				$user->CheckScanUser($facDB);
+				$user->CheckScanUser();
 				$scanjob->ScanID=$_POST['requestid'];
 				$pickup=$scanjob->GetWaitingJobs();
 				if(count($pickup)>0){
@@ -69,7 +67,7 @@
 								$scanjob->DatePickedUp=date('Y-m-d H:i');
 								$scanjob->Authorized=0;
 								$scanjob->Pickup=$user->UserID;
-								if($scanjob->PickupJob($facDB)){
+								if($scanjob->PickupJob()){
 									$error.="Please collect originals from NOC worker.";
 								}else{
 									$error.="Catostrophic failure! RUN!!";
@@ -79,7 +77,7 @@
 								$scanjob->DatePickedUp=date('Y-m-d H:i');
 								$scanjob->Authorized=1;
 								$scanjob->Pickup=$user->UserID;
-								$scanjob->PickupJob($facDB);
+								$scanjob->PickupJob();
 								$error.="User not authorized for pickup.  Please see NOC staff for override approval.";
 							}
 						}	

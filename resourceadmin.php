@@ -2,24 +2,20 @@
 	require_once( "../db.inc.php" );
 	require_once( "../facilities.inc.php" );
 
-	$user = new VUser();
-
-	$user->UserID = $_SERVER["REMOTE_USER"];
-	$user->GetUserRights( $facDB );
-
-	if ( ! $user->RackAdmin ) {
-		printf( "<meta http-equiv='refresh' content='0; url=concierge.php'>" );
-		end;
+	if(!$person->RackAdmin){
+		// No soup for you.
+		header('Location: '.redirect('concierge.php'));
+		exit;
 	}
 
 	$res = new Resource();
 
 	// Expire reservations that are older than 15 minutes
-	$res->ExpireReservations($facDB);
+	$res->ExpireReservations();
 
 	// AJAX returns
 	if(isset($_GET['updatelist'])){
-		echo buildresourcelist($res->GetActiveResources($facDB));
+		echo buildresourcelist($res->GetActiveResources());
 		exit;
 	}
 	// END AJAX
@@ -37,14 +33,13 @@
 			if($rrow->Status == "Available"){
 				$class="available";
 			}else{
-				global $facDB;
 				$resLog=new ResourceLog();
 				$resLog->ResourceID=$rrow->ResourceID;
-				$resLog->GetCurrentStatus($facDB);
+				$resLog->GetCurrentStatus();
 
 				$tmpUser=new VUser();
 				$tmpUser->UserID=$resLog->VUNetID;
-				$userName=$tmpUser->GetName($facDB);
+				$userName=$tmpUser->GetName();
 
 				$rrow->Description.=" [$userName return ".date("M j H:i", strtotime($resLog->EstimatedReturn))."]";
 				if($rrow->Status == "Out"){
@@ -104,38 +99,38 @@
 
 	if($action == "CheckOut"){
 		$res->ResourceID = $_REQUEST["resourceid"];
-		$res->GetResource($facDB);
+		$res->GetResource();
 		// You can only check out a reserved resource
 		if($res->Status == "Reserved"){
 			$resLog->ResourceID = $_REQUEST["resourceid"];
-			$resLog->CheckoutResource($facDB);
+			$resLog->CheckoutResource();
 			if(preg_match("/paid\ parking/i",$res->Description)){
-				$resLog->CheckinResource($facDB);
+				$resLog->CheckinResource();
 			}
 		}
 	}elseif($action == "CheckIn"){
 		$res->ResourceID = $_REQUEST["resourceid"];
-		$res->GetResource($facDB);
+		$res->GetResource();
 		// You can only check in a checked out resource
 		if($res->Status == "Out"){
 			$resLog->ResourceID = $_REQUEST["resourceid"];
-			$resLog->CheckinResource($facDB);
+			$resLog->CheckinResource();
 		}
 	}elseif($action == "ClearReservation"){
                 $res->ResourceID = $_REQUEST["resourceid"];
-                $res->GetResource($facDB);
+                $res->GetResource();
                 // Makes it where can you can only clear a reservation and not a checked out item
                 if($res->Status == "Reserved"){
-	                $res->ClearReservation($facDB);
+	                $res->ClearReservation();
 		}
         }
 
 	$cat = new ResourceCategory();
-	$catList = $cat->GetCategoryList($facDB);
+	$catList = $cat->GetCategoryList();
 	
 	if(@$_REQUEST["categoryid"] > 0){
 		$cat->CategoryID = $_REQUEST["categoryid"];
-		$cat->GetCategory( $facDB );
+		$cat->GetCategory();
 	}
 	
 	$body.="<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"POST\">\n<table id=\"resourceadmin\">\n<tr>\n<th>Resource Category</th>\n<td><input type=\"hidden\" name=\"action\" value=\"query\"><select name=\"categoryid\" onChange=\"form.submit()\">\n<option value=0>All Categories</option>\n";
@@ -153,9 +148,9 @@
 	$res->CategoryID = $cat->CategoryID;
 	
 	if($cat->CategoryID > 0){
-		$resList = $res->GetActiveResourcesByCategory($facDB);
+		$resList = $res->GetActiveResourcesByCategory();
 	}else{
-		$resList = $res->GetActiveResources($facDB);
+		$resList = $res->GetActiveResources();
 	}
 
 	$body.=buildresourcelist($resList);

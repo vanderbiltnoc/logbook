@@ -2,11 +2,7 @@
 	require_once( "../db.inc.php" );
 	require_once( "../facilities.inc.php" );
 
- 	$user=new VUser();
-	$user->UserID=$_SERVER["REMOTE_USER"];
-	$user->GetUserRights(); 
-
-	if(!$user->SiteAdmin){
+	if(!$person->SiteAdmin){
 		// No soup for you.
 		header('Location: '.redirect());
 		exit;
@@ -18,6 +14,7 @@
 				Config::UpdateParameter($param,$value);
 			}
 		}
+		$config->Config();
 	}
 ?>
 <!DOCTYPE HTML>

@@ -3,7 +3,7 @@
 	require_once('../facilities.inc.php');
 	require_once('vusurplus.inc.php');
 
-	if(!$user->RackAdmin){
+	if(!$person->RackAdmin){
 		// No soup for you.
 		header('Location: '.redirect("concierge.php"));
 		exit;
@@ -139,7 +139,7 @@
 						data: {vusurplus:'',getdrives:'',SurplusID: row['SurplusID']},
 						async: true,
 						success: function(data){
-							DriveForm.html(BuildTable(data,<?php echo (SurplusConfig::CheckUser($user->UserID))?'true':'false'; ?>));
+							DriveForm.html(BuildTable(data,<?php echo (SurplusConfig::CheckUser($person->UserID))?'true':'false'; ?>));
 							var dataset=DriveForm.serialize();
 							if(dataset){
 								var buttons=$.extend({}, {
@@ -167,7 +167,7 @@
 
 			var form=$('.main form');
 			var dataset=form.serializeArray();
-			var download = new iframeform('test.php');
+			var download = new iframeform('report_vusurplussearch.php');
 
 			download.addParameter('search','');
 			for(var x in dataset){

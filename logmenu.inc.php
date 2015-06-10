@@ -5,7 +5,7 @@
 		<a href="dcentryreq.php"><li>Request Data Center Entry</li></a>
 		<a href="requestscanning.php"><li>Scanning Request</li></a>
 <?php
-	if($user->RackAdmin){
+	if($person->RackAdmin){
 ?>
 		<a href="addresource.php"><li>Add/Update Resources</li></a>
 		<a href="resourceadmin.php"><li>Check In/Out Resources</li></a>
@@ -19,7 +19,7 @@
 		<a href="../"><li>Data Center Inventory</li></a>
 <?php
 	}
-	if($user->SiteAdmin){
+	if($person->SiteAdmin){
 ?>
 		<a href="configuration.php"><li>Logbook Configuration</li></a>
 		<a href="vusurplusconfig.php"><li>Surplus Configuration</li></a>
