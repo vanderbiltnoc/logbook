@@ -34,8 +34,6 @@
 	$dc = new DataCenter();
 	$contact = new Contact();
 	
-	$dcList = $dc->GetDCList();
-  
 	$action = @$_REQUEST["action"];
   
 	$user=new VUser();
@@ -71,7 +69,7 @@
 	
 	$body.="<h3 class=\"error\">$statusmessage</h3>\n<form id=\"datacenter\" action=\"$thisfile\" method=\"POST\">\n<h2>Each visitor to the data center who is an employee of Vanderbilt University and/or Medical Center must sign in under a separate and distinct request.</h2>\n<table><tr><th>Data Center</th><td><select name=\"datacenterid\">\n";
 
-	foreach($dcList as $dcRow){
+	foreach(DataCenter::GetDCList() as $dcRow){
 		if($dcRow->EntryLogging){
 			$body.="<option value=$dcRow->DataCenterID>$dcRow->Name</option>\n";
 		}
