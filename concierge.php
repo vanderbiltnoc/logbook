@@ -136,9 +136,9 @@
 				$statusmessage="I cannot find that username / password combination.  Try again.";
 			}
 		}elseif(($res->Status == "Out") || ($res->Status == "Reserved")){
-                        $reqpurpose=$_REQUEST["purpose"];
-                        $reqtime=$_REQUEST["estimatedreturn"];
-                        $reqid=$_REQUEST["vunetid"];
+			$reqpurpose=$_REQUEST["purpose"];
+			$reqtime=$_REQUEST["estimatedreturn"];
+			$reqid=$_REQUEST["vunetid"];
 			if($res->Status == "Out"){
 				$statusnote="checked out";
 				$statusnoteext=".";

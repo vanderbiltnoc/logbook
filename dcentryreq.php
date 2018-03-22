@@ -32,7 +32,7 @@
 
 	$req = new DataCenterLog();
 	$dc = new DataCenter();
-	$contact = new Contact();
+	$contact = new People();
 	
 	$action = @$_REQUEST["action"];
   
