@@ -3,7 +3,7 @@
 	require_once('../facilities.inc.php');
 	require_once('vusurplus.inc.php');
 
-	if(!$user->RackAdmin){
+	if(!$person->RackAdmin){
 		// No soup for you.
 		exit;
 	}
